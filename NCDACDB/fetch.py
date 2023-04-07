@@ -29,6 +29,8 @@ def unzip_file(zip_path: str, extract_path: str = None):
 
     Args:
         zip_path (str): A path to a zipped file which is unzipped.
+        extract_path (str): A path to store unzipped files, in `None` it will 
+        use the parent directory for the zipped file. Default is `None`.
     """
     if extract_path is None:
         extract_path = os.path.dirname(zip_path)
@@ -77,9 +79,3 @@ def unpack_zipped_paths(url_list: list, extract_path: str, **kwargs):
         os.makedirs(extract_path)
     for url in url_list:
         download_file(url=url, extract_path=extract_path, **kwargs)
-
-
-urls = get_zipped_paths()    
-unpack_zipped_paths(url_list=urls, extract_path="test")
-
-
