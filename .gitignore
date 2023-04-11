@@ -131,3 +131,5 @@ dmypy.json
 # Ignore folders used to test tool
 rawdata/
 *.dat
+*.des 
+*.sqlite
