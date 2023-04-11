@@ -20,5 +20,5 @@ Build a local SQLite database from the downloaded files:
 ```python
 from NCDACDB import build
 
-build_sqlite_db(db_name="ncdacdb", dir_path=S"rawdata")
+build_sqlite_db(db_name="ncdacdb", dir_path="rawdata")
 ```
