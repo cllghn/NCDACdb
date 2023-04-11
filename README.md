@@ -14,3 +14,11 @@ from NCDACDB import fetch
 urls = get_zipped_paths()    
 unpack_zipped_paths(url_list=urls, extract_path="rawdata")
 ```
+
+Build a local SQLite database from the downloaded files:
+
+```python
+from NCDACDB import build
+
+build_sqlite_db(db_name="ncdacdb", dir_path=S"rawdata")
+```
