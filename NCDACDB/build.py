@@ -45,7 +45,7 @@ def preprocess_des_file(file_path : str, pattern : str = None, sep : str = "|",
     out = [line.split(sep) for line in temp]
     out = pd.DataFrame(out)
     out.columns = names
-    if names != list(out.iloc[1]):
+    if names == list(out.iloc[0]):
         out = out.iloc[1:]
 
     return out
@@ -70,7 +70,6 @@ def get_date_cols(df: pd.DataFrame, var: str = "Name", type: str = "Type",
     assert isinstance(df, pd.DataFrame), "The df must by a Pandas DataFrame object"
     assert var in df.columns, f"var ({var}) must be a valid column header name for the DataFrame."
     assert type in df.columns, f"type ({type}) must be a valid column header name for the DataFrame."
-    assert value in df.columns, f"value ({value}) must be a valid column header name for the DataFrame."
     
     # Transform DataFrame to a dictionary where the key represents the variable
     # name and the value is the data type listed in the *.des file.
@@ -86,7 +85,9 @@ def get_date_cols(df: pd.DataFrame, var: str = "Name", type: str = "Type",
 
     return out
 
-def preprocess_dat_file(dat_path: str, des_path: str) -> pd.DataFrame:
+def preprocess_dat_file(dat_path: str, des_path: str, fix_dates: bool = True,
+                        subset: int = None
+                        ) -> pd.DataFrame:
     """
     A routine to ingest and preprocess the data in a *.dat file. In order to do
     so, the *.dat file must be accompanied by a matching *.des file, which
@@ -95,6 +96,10 @@ def preprocess_dat_file(dat_path: str, des_path: str) -> pd.DataFrame:
     Args:
         dat_path (str): The path to the *.dat file.
         des_path (str): The path to the *.des file.
+        fix_dates (bool): A logical, defaults to `True`, which enables the
+        function to transform date variables from strings to dates.
+        subset (int): For testing purposes, when not None it indicates how many
+        rows should be read. 
     
     Return:
         DataFrame: A tabular representation of the *.dat data as a Pandas 
@@ -110,12 +115,16 @@ def preprocess_dat_file(dat_path: str, des_path: str) -> pd.DataFrame:
     out = []
     with open(dat_path, "r") as f:
         lines = f.readlines()
+
+    if subset is not None:
+        lines = lines[0:subset]
+
     for line in lines:
         temp = {}
         for index, row in des.iterrows():
             start = int(row["Start"]) - 1
             end = start + int(row["Length"])
-            if row["Name"] in dt.keys():
+            if row["Name"] in dt.keys() and fix_dates:
                 temp[row["Name"]] = pd.to_datetime(line.strip()[start:end],
                                                    errors="coerce").date()
             else:
@@ -151,7 +160,7 @@ def list_unique_files(dir_path: str, extensions: tuple = (".dat", ".des")) -> di
     
     return out
 
-def process_table(kvcombo: dict) -> dict:
+def process_table(kvcombo: dict, **kwargs) -> dict:
     """
     A routine to process individual *.dat files in conjunction with its
     corresponding *.des file. This ensures that both files are processed AND
@@ -168,7 +177,8 @@ def process_table(kvcombo: dict) -> dict:
     """
     out = {}
     data = preprocess_dat_file(dat_path=kvcombo["dat"],
-                                   des_path=kvcombo["des"])
+                               des_path=kvcombo["des"],
+                                **kwargs)
     desc = preprocess_des_file(file_path=kvcombo["des"])
     out[kvcombo["ids"]] = {
         "data" : data,
@@ -176,7 +186,7 @@ def process_table(kvcombo: dict) -> dict:
     }
     return out
 
-def build_sqlite_db(db_name: str, dir_path: str, index:bool = False):
+def build_sqlite_db(db_name: str, dir_path: str, **kwargs):
     """
     A routine to generate an SQLite database from the *.dat and *des files
     within a specific directory.
@@ -184,7 +194,6 @@ def build_sqlite_db(db_name: str, dir_path: str, index:bool = False):
     Args: 
         db_name (str): The name for the resulting database.
         dir_path (str): A directory path containing *.des and *.dat files.
-        index (bool): Write DataFrame index as a column.
 
     Returns: 
         None: It writes an SQLite file.
@@ -197,12 +206,17 @@ def build_sqlite_db(db_name: str, dir_path: str, index:bool = False):
     
     for file in files:
         print(f"Reading {file}...")
-        temp = process_table(kvcombo=files[file])
+        temp = process_table(kvcombo=files[file], **kwargs)
         for key in temp.keys():
             for table in temp[key].keys():
                 print(f"\t Writing:{file}_{table}\n")
-                temp[key][table].to_sql(name=f"{file}_{table}", con=conn,
-                                        index=False, if_exists="replace")
-                
+                if table == "data":
+                    temp[key][table].to_sql(name=f"{file}_{table}", con=conn,
+                                            index=False,
+                                            if_exists="replace")
+                # TODO fix the lack of PK.
+                # if table == "data":
+                #     sql_command = "ALTER TABLE {tablename} ADD PRIMARY KEY ({pk});".format(tablename=f"{file}_{table}", pk=temp[key][table].columns[0])
+                #     print(sql_command)
+                #     conn.execute(sql_command)
     conn.close()
-
