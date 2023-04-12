@@ -37,7 +37,8 @@ def unzip_file(zip_path: str, extract_path: str = None):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_path)
 
-def download_file(url: str, extract_path: str, local_name: str = None, unzip: bool = True, cleanup: bool = True):
+def download_file(url: str, extract_path: str, local_name: str = None,
+                  unzip: bool = True, cleanup: bool = True):
     """
     Download files from a URL
 
@@ -74,6 +75,11 @@ def download_file(url: str, extract_path: str, local_name: str = None, unzip: bo
 
 def unpack_zipped_paths(url_list: list, extract_path: str, **kwargs):
     """
+    Unpack zipped files.
+    
+    Args:
+        url_list (list): A list of zipped files.
+        extract_path (str): A location to dump unzipped files.
     """
     if not os.path.exists(extract_path):
         os.makedirs(extract_path)
