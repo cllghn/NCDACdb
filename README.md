@@ -22,3 +22,11 @@ from NCDACdb import build
 
 build_sqlite_db(db_name="ncdacdb", dir_path="rawdata")
 ```
+
+Downsize the database to only include records updated after January 1st, 2020:
+
+```python
+from NCDACdb import downsample
+
+downsize_by_update(input_db='ncdacdb.sqlite', output_db='sub_ncdacdb.sqlite', date_filter='2020-01-01')
+```
