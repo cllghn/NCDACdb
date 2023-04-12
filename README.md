@@ -28,5 +28,7 @@ Downsize the database to only include records updated after January 1st, 2020:
 ```python
 from NCDACdb import downsize
 
-downsize_by_update(input_db='ncdacdb.sqlite', output_db='sub_ncdacdb.sqlite', date_filter='2020-01-01')
+downsize_by_update(input_db='ncdacdb.sqlite',
+                   output_db='sub_ncdacdb.sqlite', 
+                   date_filter='2020-01-01')
 ```
