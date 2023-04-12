@@ -214,6 +214,10 @@ def build_sqlite_db(db_name: str, dir_path: str, **kwargs):
                     temp[key][table].to_sql(name=f"{file}_{table}", con=conn,
                                             index=False,
                                             if_exists="replace")
+                if table == "desc":
+                    temp[key][table].to_sql(name=f"{file}_{table}", con=conn,
+                                            index=False,
+                                            if_exists="replace")
                 # TODO fix the lack of PK.
                 # if table == "data":
                 #     sql_command = "ALTER TABLE {tablename} ADD PRIMARY KEY ({pk});".format(tablename=f"{file}_{table}", pk=temp[key][table].columns[0])

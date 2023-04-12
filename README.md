@@ -6,10 +6,15 @@ The schema for the database is provided, [here](https://www.doc.state.nc.us/offe
 
 ## Usage Examples:
 
+Install with pip:
+```python
+pip install -i https://test.pypi.org/simple/ NCDACdb==0.1.0
+```
+
 Download, and unzip all raw data:
 
 ```python
-from NCDACdb import fetch
+from NCDACdb.fetch import get_zipped_paths, unpack_zipped_paths
 
 urls = get_zipped_paths()    
 unpack_zipped_paths(url_list=urls, extract_path="rawdata")
@@ -18,7 +23,7 @@ unpack_zipped_paths(url_list=urls, extract_path="rawdata")
 Build a local SQLite database from the downloaded files:
 
 ```python
-from NCDACdb import build
+from NCDACdb.build import build_sqlite_db
 
 build_sqlite_db(db_name="ncdacdb", dir_path="rawdata")
 ```
@@ -26,7 +31,7 @@ build_sqlite_db(db_name="ncdacdb", dir_path="rawdata")
 Downsize the database to only include records updated after January 1st, 2020:
 
 ```python
-from NCDACdb import downsize
+from NCDACdb.downsize import downsize_by_update
 
 downsize_by_update(input_db='ncdacdb.sqlite',
                    output_db='sub_ncdacdb.sqlite', 
